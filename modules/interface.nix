@@ -77,7 +77,7 @@ let
       substituteInPlace $out/layout.kdl --replace-fail \
         '    always-center-single-column' \
         '    always-center-single-column
-          default-column-width { proportion ${toString cfg.defaultColumnWidth}; }'
+          default-column-width { proportion ${columnWidth}; }'
     ''
     + ''
       substituteInPlace $out/config.kdl --replace-fail \
@@ -120,6 +120,11 @@ let
     in
     wrapped // { override = _: wrapped; };
 
+  # toString prints floats as 0.700000; trim the trailing zeros.
+  columnWidth = builtins.head (
+    builtins.match "([0-9]*\\.[0-9]*[1-9]|[0-9]*)\\.?0*" (toString cfg.defaultColumnWidth)
+  );
+
   perUser = attrs: lib.genAttrs config.pond.users (_: attrs);
 in
 {
@@ -155,11 +160,11 @@ in
 
     defaultColumnWidth = lib.mkOption {
       type = lib.types.nullOr lib.types.float;
-      default = 0.7;
-      example = null;
+      default = null;
+      example = 0.7;
       description = ''
-        Width of new windows as a fraction of the screen. `null` keeps niri's
-        default (half the screen).
+        Width of new windows as a fraction of the screen. `null` (the default)
+        keeps niri's own default, half the screen.
       '';
     };
 

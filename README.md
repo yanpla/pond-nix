@@ -60,7 +60,7 @@ or leave `pond.enable` off and turn on only what you want:
 | `pond.interface.displayManager.enable` | `true` | Pond's login screen (SDDM greeter in niri) |
 | `pond.interface.launcher.enable` | `true` | Launcher (Pond's vicinae fork, Super+Space) |
 | `pond.interface.seedUserConfig` | `true` | Copy default niri/kitty config into `~/.config` (never overwrites) |
-| `pond.interface.defaultColumnWidth` | `0.7` | Width of new windows; `null` for niri's default (0.5) |
+| `pond.interface.defaultColumnWidth` | `null` | Width of new windows as a fraction of the screen, e.g. `0.7`; `null` keeps niri's default (0.5) |
 | `pond.interface.extraPackages` | kitty, nautilus, ... | Apps installed alongside the shell |
 | **Boot** | | |
 | `pond.plymouth.enable` | `pond.enable` | Pond boot splash and quiet boot |
