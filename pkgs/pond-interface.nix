@@ -54,7 +54,6 @@ stdenv.mkDerivation {
   dontUseCmakeConfigure = true;
   dontWrapQtApps = true;
 
-  # (In the comments below, module.nix means modules/interface.nix.)
   postPatch = ''
     # Call tools through PATH instead of /usr/bin (shebang lines are left for
     # patchShebangs), and point at our own share dir.
@@ -64,15 +63,6 @@ stdenv.mkDerivation {
         -e "s|/usr/share/pond-interface|$out/share/pond-interface|g" \
         -e "s|/usr/share/X11/xkb|${xkeyboard_config}/share/X11/xkb|g" \
         -e "s|/usr/share/zoneinfo|${tzdata}/share/zoneinfo|g" {} +
-
-    # The greeter's exit wipe ends fully transparent (it is the unlock
-    # animation, which reveals a desktop underneath); at login there is
-    # nothing under it yet. End on the lock colour instead, which the session
-    # picks up and reveals the desktop from (module.nix, login-reveal/).
-    substituteInPlace lockscreen/greeter/Main.qml --replace-fail \
-      '    NetworkStatus { id: network }' \
-      '    Rectangle { anchors.fill: parent; color: "#1a1409" }
-        NetworkStatus { id: network }'
   '';
 
   buildPhase = ''

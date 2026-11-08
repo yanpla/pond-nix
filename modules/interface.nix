@@ -55,19 +55,8 @@ let
     '';
   };
 
-  # Login handoff: the greeter's exit wipe ends on the lock colour (see
-  # pkgs/pond-interface.nix), niri shows that colour while the session
-  # starts, and login-reveal/ then uncovers the desktop with Pond's unlock
-  # reveal once the wallpaper is up. So: greeter -> lock colour -> desktop.
-  lockColor = "#1a1409";
-  loginReveal = pkgs.runCommand "pond-login-reveal" { } ''
-    mkdir $out
-    cp ${./login-reveal/shell.qml} $out/shell.qml
-    ln -s ${share}/lockscreen/frontend $out/frontend
-  '';
-
   # Pond's shell-owned niri config (~/.config/niri/shell), optionally with a
-  # different default width for new windows, plus the login handoff above.
+  # different default width for new windows.
   niriShellConfig = pkgs.runCommand "pond-niri-shell-config" { } (
     ''
       cp -r ${share}/config/niri/shell $out
@@ -78,17 +67,6 @@ let
         '    always-center-single-column' \
         '    always-center-single-column
           default-column-width { proportion ${columnWidth}; }'
-    ''
-    + ''
-      substituteInPlace $out/config.kdl --replace-fail \
-        'spawn-sh-at-startup "qs -c pond-shell"' \
-        'spawn-at-startup "${quickshell}/bin/qs" "-p" "${loginReveal}"
-      spawn-sh-at-startup "qs -c pond-shell"
-
-      // Shown behind everything until the wallpaper is up (niri default: grey).
-      overview {
-          backdrop-color "${lockColor}"
-      }'
     ''
   );
 
