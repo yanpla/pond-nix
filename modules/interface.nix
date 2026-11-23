@@ -4,14 +4,13 @@
   config,
   lib,
   pkgs,
+  # Pond's QML plugins and quickshell must share one Qt (see common.nix).
+  pondPkgs,
   ...
 }:
 
 let
   cfg = config.pond.interface;
-
-  # Pond needs Qt >= 6.12; its QML plugins and quickshell must share one Qt.
-  pondPkgs = config.pond.pkgs;
   pond = config.pond.package;
   vicinae = config.pond.vicinaePackage;
   share = "${pond}/share/pond-interface";

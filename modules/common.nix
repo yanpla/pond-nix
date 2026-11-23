@@ -1,37 +1,10 @@
-# Options shared by every Pond module: the master switch, the users Pond
-# applies to, and the packages built from this flake's inputs.
-inputs:
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
+self:
+{ lib, pkgs, ... }:
 
 let
-  inherit (lib) mkOption types;
   system = pkgs.stdenv.hostPlatform.system;
-
-  # Pond's fork of the vicinae launcher (pond-launcher on Arch): adds the
-  # pond-* themes the appearance settings switch between.
-  # The fork builds vicinae with gcc15Stdenv, but its numen dependency gets the
-  # nixpkgs default compiler (now GCC 16); their std::format ABIs differ and
-  # the final link fails. Build numen with the same GCC 15 toolchain.
-  vicinae =
-    let
-      v = inputs.pond-vicinae;
-      forkPkgs = v.inputs.nixpkgs.legacyPackages.${system};
-      numen = v.inputs.numen.packages.${system}.numen.override {
-        stdenv = forkPkgs.gcc15Stdenv;
-        withRepl = false;
-      };
-    in
-    v.packages.${system}.default.override { inherit numen; };
 in
 {
-  # Deduplicates this module when several Pond modules are imported.
-  key = "pond-nix/common";
-
   options.pond = {
     enable = lib.mkEnableOption ''
       everything Pond: the desktop interface, boot splash, GRUB theme, dark
@@ -39,8 +12,8 @@ in
       individually (e.g. `pond.grub.enable = false;`)
     '';
 
-    users = mkOption {
-      type = types.listOf types.str;
+    users = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
       default = [ ];
       example = [ "alice" ];
       description = ''
@@ -49,37 +22,22 @@ in
       '';
     };
 
-    pkgs = mkOption {
-      type = types.raw;
-      default = inputs.nixpkgs.legacyPackages.${system};
-      defaultText = lib.literalExpression "pond-nix.inputs.nixpkgs.legacyPackages.\${system}";
-      description = ''
-        Package set Pond's Qt parts (the interface, quickshell, the SDDM
-        greeter) are built from. Pond needs Qt >= 6.12, so this defaults to
-        the nixos-unstable pinned by this flake rather than your system's
-        nixpkgs.
-      '';
-    };
-
-    src = mkOption {
-      type = types.path;
-      default = inputs.pond-interface;
-      defaultText = lib.literalExpression "pond-nix.inputs.pond-interface";
-      description = "Source of pond-interface (shell, lockscreen, plymouth and GRUB themes).";
-    };
-
-    package = mkOption {
-      type = types.package;
-      default = config.pond.pkgs.callPackage ../pkgs/pond-interface.nix { src = config.pond.src; };
-      defaultText = lib.literalMD "pond-interface built from `pond.src` with `pond.pkgs`";
+    package = lib.mkOption {
+      type = lib.types.package;
+      default = self.packages.${system}.pond-interface;
+      defaultText = lib.literalExpression "pond-nix.packages.\${system}.pond-interface";
       description = "The Pond interface package.";
     };
 
-    vicinaePackage = mkOption {
-      type = types.package;
-      default = vicinae;
-      defaultText = lib.literalMD "Pond's vicinae fork";
+    vicinaePackage = lib.mkOption {
+      type = lib.types.package;
+      default = self.packages.${system}.vicinae;
+      defaultText = lib.literalExpression "pond-nix.packages.\${system}.vicinae";
       description = "The launcher package (Pond's fork of vicinae).";
     };
   };
+
+  # Pond needs Qt >= 6.12, so its Qt parts are built from this flake's
+  # nixos-unstable rather than the system's nixpkgs.
+  config._module.args.pondPkgs = self.inputs.nixpkgs.legacyPackages.${system};
 }

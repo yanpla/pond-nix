@@ -13,70 +13,44 @@
   };
 
   outputs =
-    { self, nixpkgs, ... }@inputs:
+    {
+      self,
+      nixpkgs,
+      pond-interface,
+      pond-vicinae,
+    }:
     let
-      systems = [
+      forAllSystems = nixpkgs.lib.genAttrs [
         "x86_64-linux"
         "aarch64-linux"
       ];
-      forAllSystems = nixpkgs.lib.genAttrs systems;
-
-      common = import ./modules/common.nix inputs;
-      withCommon = module: {
-        imports = [
-          common
-          module
-        ];
-      };
     in
     {
-      nixosModules = {
-        # Everything; enable with `pond.enable = true;` or per part.
-        default = {
-          imports = [
-            common
-            ./modules/interface.nix
-            ./modules/plymouth.nix
-            ./modules/grub.nix
-            ./modules/gtk.nix
-            ./modules/optimizations.nix
-          ];
+      nixosModules.default = {
+        imports = [
+          (import ./modules/common.nix self)
+          ./modules/interface.nix
+          ./modules/plymouth.nix
+          ./modules/grub.nix
+          ./modules/gtk.nix
+          ./modules/optimizations.nix
+        ];
+      };
+
+      packages = forAllSystems (system: {
+        pond-interface = nixpkgs.legacyPackages.${system}.callPackage ./pkgs/pond-interface.nix {
+          src = pond-interface;
         };
-        interface = withCommon ./modules/interface.nix;
-        plymouth = withCommon ./modules/plymouth.nix;
-        grub = withCommon ./modules/grub.nix;
-        gtk = withCommon ./modules/gtk.nix;
-        optimizations = withCommon ./modules/optimizations.nix;
-      };
 
-      packages = forAllSystems (
-        system:
-        let
-          eval = nixpkgs.lib.evalModules {
-            modules = [
-              common
-              { _module.args.pkgs = nixpkgs.legacyPackages.${system}; }
-            ];
-          };
-        in
-        {
-          pond-interface = eval.config.pond.package;
-          vicinae = eval.config.pond.vicinaePackage;
-          default = self.packages.${system}.pond-interface;
-        }
-      );
+        # Pond's fork of the vicinae launcher, with the pond-* themes.
+        vicinae = pond-vicinae.packages.${system}.default;
 
-      # `pkgs.pond-interface` and `pkgs.pond-vicinae` for use outside the
-      # NixOS modules. Built from this flake's nixpkgs (Pond needs Qt >= 6.12),
-      # not from the nixpkgs the overlay is applied to.
-      overlays.default = final: _prev: {
-        pond-interface = self.packages.${final.stdenv.hostPlatform.system}.pond-interface;
-        pond-vicinae = self.packages.${final.stdenv.hostPlatform.system}.vicinae;
-      };
+        default = self.packages.${system}.pond-interface;
+      });
 
       formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt);
 
-      # `nix flake check` evaluates a sample system with everything enabled.
+      # Evaluates a sample system with everything enabled.
       checks = forAllSystems (system: {
         eval =
           let

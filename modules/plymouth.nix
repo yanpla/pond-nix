@@ -18,7 +18,7 @@ let
   theme = pkgs.runCommand "plymouth-theme-pond" { } ''
     dir=$out/share/plymouth/themes/pond
     mkdir -p $dir
-    cp -r ${config.pond.src}/plymouth/. $dir/
+    cp -r ${config.pond.package.src}/plymouth/. $dir/
     chmod -R u+w $dir
     substituteInPlace $dir/pond.plymouth \
       --replace-fail /usr/share/plymouth/themes/pond $dir

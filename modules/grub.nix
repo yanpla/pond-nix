@@ -9,7 +9,7 @@
 
 let
   cfg = config.pond.grub;
-  src = "${config.pond.src}/grub";
+  src = "${config.pond.package.src}/grub";
 
   theme = pkgs.runCommand "grub-theme-pond" { } ''
     mkdir -p $out
