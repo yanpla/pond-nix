@@ -24,8 +24,7 @@ in
 
     package = lib.mkOption {
       type = lib.types.package;
-      default = self.packages.${system}.pond-interface;
-      defaultText = lib.literalExpression "pond-nix.packages.\${system}.pond-interface";
+      default = pkgs.callPackage ../pkgs/pond-interface.nix { src = self.inputs.pond-interface; };
       description = "The Pond interface package.";
     };
 
@@ -36,8 +35,4 @@ in
       description = "The launcher package (Pond's fork of vicinae).";
     };
   };
-
-  # Pond needs Qt >= 6.12, so its Qt parts are built from this flake's
-  # nixos-unstable rather than the system's nixpkgs.
-  config._module.args.pondPkgs = self.inputs.nixpkgs.legacyPackages.${system};
 }

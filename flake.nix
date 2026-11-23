@@ -2,8 +2,8 @@
   description = "Pond (bflycomputer's desktop) for NixOS: interface, boot splash, GRUB theme and system optimizations";
 
   inputs = {
-    # Pond needs Qt >= 6.12, so its Qt parts are built from unstable no matter
-    # which nixpkgs the host uses.
+    # Pond needs Qt >= 6.12 (nixos-unstable). Only make this follow your
+    # nixpkgs if yours is nixos-unstable too.
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     pond-interface = {
       url = "github:bflycomputer/pond-interface";

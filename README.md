@@ -30,6 +30,4 @@ optimizations.
 Every part can be turned off on its own, e.g. `pond.grub.enable = false;`.
 All options are under `pond.*` in [`modules/`](modules).
 
-Don't make `pond.inputs.nixpkgs` follow yours: Pond needs Qt >= 6.12 from
-nixos-unstable. Nothing is in a binary cache, so the first build compiles
-locally.
+Pond needs nixos-unstable (Qt >= 6.12).

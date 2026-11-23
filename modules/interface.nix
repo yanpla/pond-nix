@@ -4,8 +4,6 @@
   config,
   lib,
   pkgs,
-  # Pond's QML plugins and quickshell must share one Qt (see common.nix).
-  pondPkgs,
   ...
 }:
 
@@ -15,13 +13,13 @@ let
   vicinae = config.pond.vicinaePackage;
   share = "${pond}/share/pond-interface";
 
-  python = pondPkgs.python3.withPackages (ps: [
+  python = pkgs.python3.withPackages (ps: [
     ps.pyqt6
     ps.pygobject3
   ]);
 
   # Commands the shell and its helper scripts run.
-  runtimeDeps = with pondPkgs; [
+  runtimeDeps = with pkgs; [
     python
     networkmanager # nmcli
     iw
@@ -37,14 +35,14 @@ let
     getent
     coreutils
     config.programs.niri.package
-    pkgs.systemd
+    systemd
   ];
 
   # `qs` / `quickshell` that can find Pond's QML modules and tools.
-  quickshell = pondPkgs.symlinkJoin {
+  quickshell = pkgs.symlinkJoin {
     name = "quickshell-pond";
-    paths = [ pondPkgs.quickshell ];
-    nativeBuildInputs = [ pondPkgs.makeWrapper ];
+    paths = [ pkgs.quickshell ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
     postBuild = ''
       for bin in qs quickshell; do
         wrapProgram $out/bin/$bin \
@@ -87,8 +85,8 @@ let
   # channel via `.override`; ignore that so no older Qt plugins sneak in.
   sddm =
     let
-      wrapped = pondPkgs.kdePackages.sddm.override {
-        extraPackages = with pondPkgs.kdePackages; [
+      wrapped = pkgs.kdePackages.sddm.override {
+        extraPackages = with pkgs.kdePackages; [
           pond
           qtsvg
           qtwayland
@@ -164,6 +162,12 @@ in
   config = lib.mkIf cfg.enable (
     lib.mkMerge [
       {
+        assertions = [
+          {
+            assertion = lib.versionAtLeast pkgs.kdePackages.qtbase.version "6.12";
+            message = "Pond needs Qt >= 6.12: use nixos-unstable.";
+          }
+        ];
         programs.niri.enable = true;
 
         environment.systemPackages = [
