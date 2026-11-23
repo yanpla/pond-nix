@@ -11,13 +11,12 @@ let
   cfg = config.pond.grub;
   src = "${config.pond.src}/grub";
 
-  # Only the chosen size is copied to /boot: NixOS loads every .pf2 in the
-  # theme directory, and the other sizes would just take up space on the ESP.
-  theme = pkgs.runCommand "grub-theme-pond-${cfg.scale}" { } ''
-    mkdir -p $out/assets $out/f
-    cp ${src}/layouts/theme-${cfg.scale}.txt $out/theme.txt
-    cp -r ${src}/assets/${cfg.scale} $out/assets/
-    cp ${src}/assets/fonts/onest-${cfg.scale}.pf2 $out/f/
+  theme = pkgs.runCommand "grub-theme-pond" { } ''
+    mkdir -p $out
+    cp ${src}/layouts/theme.txt $out/theme.txt
+    cp -r ${src}/assets $out/assets
+    chmod -R u+w $out/assets
+    rm -f $out/assets/fonts/*.txt
   '';
 in
 {
@@ -31,19 +30,6 @@ in
         (`efiSupport = true; device = "nodev";`); override those
         `boot.loader.grub` options for BIOS systems.
       '';
-    };
-
-    scale = lib.mkOption {
-      type = lib.types.enum [
-        "12"
-        "17"
-        "21"
-        "32"
-        "43"
-        "64"
-      ];
-      default = "21";
-      description = "Theme size: 21 suits a 1080p screen, 32 a 1440p one, 43 a 4K one.";
     };
 
     renameEntries = lib.mkOption {

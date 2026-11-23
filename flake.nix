@@ -66,6 +66,16 @@
         }
       );
 
+      # `pkgs.pond-interface` and `pkgs.pond-vicinae` for use outside the
+      # NixOS modules. Built from this flake's nixpkgs (Pond needs Qt >= 6.12),
+      # not from the nixpkgs the overlay is applied to.
+      overlays.default = final: _prev: {
+        pond-interface = self.packages.${final.stdenv.hostPlatform.system}.pond-interface;
+        pond-vicinae = self.packages.${final.stdenv.hostPlatform.system}.vicinae;
+      };
+
+      formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt);
+
       # `nix flake check` evaluates a sample system with everything enabled.
       checks = forAllSystems (system: {
         eval =
