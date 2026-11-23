@@ -23,7 +23,7 @@ optimizations.
 # configuration.nix
 {
   pond.enable = true;
-  pond.users = [ "alice" ];
+  pond.users = [ "alice" ]; # your username
 }
 ```
 
